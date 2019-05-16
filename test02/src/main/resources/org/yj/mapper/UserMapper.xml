@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.yj.mapper.UserMapper">
+    <!-- 查询用户 -->
+    <select id="findByUsername" parameterType="string" resultType="user">
+        select * from user where username = #{value}
+    </select>
+
+    <!-- 查询用户权限 -->
+    <select id="findPermissionByUsername" parameterType="string" resultType="permission">
+        SELECT permission.*
+        FROM `user`
+                 INNER JOIN user_role ON user_role.user_id=`user`.id
+                 INNER JOIN role_permission ON user_role.role_id=role_permission.role_id
+                 INNER JOIN permission ON role_permission.perm_id=permission.id
+        WHERE `user`.username=#{value}
+    </select>
+
+    <update id="updatePassword" parameterType="user">
+        update user
+        set password=#{password}
+        where username=#{username}
+    </update>
+</mapper>

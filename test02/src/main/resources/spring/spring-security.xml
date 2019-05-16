@@ -1,0 +1,57 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/security
+        https://www.springframework.org/schema/security/spring-security.xsd">
+
+    <security:http>
+        <security:intercept-url pattern="/js/**" access="permitAll()"/>
+        <security:intercept-url pattern="/imageCode" access="permitAll()"/>
+        <security:intercept-url pattern="/userLogin" access="permitAll()"/>
+        <security:intercept-url pattern="/product/index" access="isFullyAuthenticated()"/>
+        <security:intercept-url pattern="/product/list" access="hasAuthority('ROLE_LIST_PRODUCT')"/>
+        <security:intercept-url pattern="/product/add" access="hasAuthority('ROLE_ADD_PRODUCT')"/>
+        <security:intercept-url pattern="/product/update" access="hasAuthority('ROLE_UPDATE_PRODUCT')"/>
+        <security:intercept-url pattern="/product/delete" access="hasAuthority('ROLE_DELETE_PRODUCT')"/>
+        <security:intercept-url pattern="/**" access="isFullyAuthenticated()"/>
+
+        <!-- 自定义spring security过滤器 -->
+        <security:custom-filter ref="imageCodeAuthenticationFilter" before="FORM_LOGIN_FILTER"/>
+
+<!--        <security:form-login login-page="/userLogin" login-processing-url="/securityLogin"-->
+<!--                             authentication-failure-url="/userLogin?error=true"-->
+<!--                             authentication-success-forward-url="/product/index"/>-->
+        <security:form-login login-page="/userLogin" login-processing-url="/securityLogin"
+                             authentication-success-handler-ref="myAuthenticationSuccessHandler"
+                             authentication-failure-handler-ref="myAuthenticationFailHandler"/>
+        <security:access-denied-handler error-page="/error"/>
+        <security:csrf disabled="true"/>
+
+        <!-- 加上remember-me功能 -->
+        <security:remember-me token-repository-ref="jdbcToken" token-validity-seconds="3600"/>
+    </security:http>
+
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="myUserDetailService">
+            <security:password-encoder ref="passwordEncoder"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+    <bean id="myAuthenticationSuccessHandler" class="org.yj.security.MyAuthenticationSuccessHandler"/>
+
+    <bean id="myAuthenticationFailHandler" class="org.yj.security.MyAuthenticationFailHandler"/>
+
+    <bean id="imageCodeAuthenticationFilter" class="org.yj.security.ImageCodeAuthenticationFilter">
+        <property name="authenticationFailureHandler" ref="myAuthenticationFailHandler"/>
+    </bean>
+
+    <bean id="jdbcToken" class="org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl">
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 注意创建过一次之后就要注释掉下面这行 -->
+<!--        <property name="createTableOnStartup" value="true"/>-->
+    </bean>
+</beans>
