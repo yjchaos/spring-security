@@ -1,2 +1,5 @@
 org/yj/controller/ProductController.class
+org/yj/security/MyAuthenticationFailHandler.class
+org/yj/security/MyAuthenticationSuccessHandler.class
 org/yj/controller/MainController.class
+org/yj/security/MyUserDetailService.class
